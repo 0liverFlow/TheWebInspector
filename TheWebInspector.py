@@ -56,6 +56,8 @@ if __name__ == "__main__":
     if inspected_webpage.soup == "":
         printc("[red3][-][/red3] No information found!")
         sys.exit(printc("[gold1][!][/gold1] Please make sure that the specified url is not redirected, then retry!"))
+    else:
+        print(inspected_webpage.soup)
                  
     ##############################
     # Checking website language
