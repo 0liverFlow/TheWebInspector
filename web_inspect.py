@@ -18,7 +18,8 @@ class WebInspect:
                 self.response = subprocess.check_output(command)
                 self.soup = bsoup(self.response, 'html.parser')
             except subprocess.CalledProcessError:
-                sys.exit(printc("[red1 b][-][/red1 b] An error occured! Make sure you are connected to the Internet, then retry!"))
+                printc("[red1 b][-][/red1 b] An error occured! Are you connected to the Internet?")
+                sys.exit(printc("[red1 b][-][/red1 b] If yes, thanks to report this issue at https://github.com/0liverFlow/TheWebInspector/issues!"))
         else:
             sys.exit(printc("[red1 b][-][/red1 b] Incorrect URL format (ex: http[s]://example.com"))
 
