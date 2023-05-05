@@ -233,7 +233,7 @@ if __name__ == "__main__":
     ##################
     inspected_webpage.get_phpinfo()
     printc(f"\n[bright_blue][*][/bright_blue] PHP Info\n{'-'*20}")
-    if not inspected_webpage.phpinfo.startswith("N/A"):
+    if not inspected_webpage.phpinfo != "N/A":
         printc(f"[spring_green2][+][/spring_green2] {inspected_webpage.phpinfo} found!")
     else:
         printc(f"[red3][-][/red3] {inspected_webpage.phpinfo}")
@@ -243,7 +243,7 @@ if __name__ == "__main__":
     ##################
     inspected_webpage.get_cgidir()
     printc(f"\n[bright_blue][*][/bright_blue] CGI Dir\n{'-'*20}")
-    if inspected_webpage.cgidir.startswith("N/A"):
+    if inspected_webpage.cgidir != "N/A":
         printc(f"[spring_green2][+][/spring_green2] {inspected_webpage.cgidir} found!")
     else:
         printc(f"[red3][-][/red3] {inspected_webpage.cgidir}")
