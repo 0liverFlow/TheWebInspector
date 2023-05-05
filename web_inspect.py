@@ -8,19 +8,14 @@ import requests
 from bs4 import BeautifulSoup as bsoup, Comment
 from bs4 import BeautifulSoup as bsoup, Comment
 
-class WebInspect:    
+class WebInspect:
     def __init__(self, url):
         if url.startswith('http'):
             self.url = url[:-1] if url.endswith('/')  else url
-            self.headers = {
-                "DNT": "1",
-                "Accept-encoding": "gzip, deflate, br",
-                "Referer": '/'.join(self.url.split('/')[:3]),
-                "Upgrade-Insecure-Requests": "1",
-                "User-agent": self.get_user_agent()
-            }
+            self.headers = {'User-agent': self.get_user_agent(), 'Referer': '/'.join(self.url.split('/')[:3])}
             try:
-                self.response = subprocess.check_output(['curl','-A', self.get_user_agent(), '-L', '-s', self.url])
+                command = ['curl','-A', self.get_user_agent(), '-s', self.url]
+                self.response = subprocess.check_output(command)
                 self.soup = bsoup(self.response, 'html.parser')
             except subprocess.CalledProcessError:
                 sys.exit(printc("[red1 b][-][/red1 b] An error occured! Make sure you are connected to the Internet, then retry!"))
@@ -157,7 +152,7 @@ class WebInspect:
             response_robots_txt_rules = response_robots_txt.text.split("\n")
             if len(response_robots_txt_rules):
                 self.robots_txt = response_robots_txt_rules
-            elif response_robots_txt.ok:
+            else:
                 self.robots_txt="Robots.txt file empty!"
         else:
             self.robots_txt = "N/A"
@@ -184,17 +179,18 @@ class WebInspect:
             "Feature-Policy"
         ]
         self.unset_secured_http_response_headers = list()
-        response = requests.get(self.url, headers=self.headers)   
-        http_response_headers = response.headers
-        for secure_http_response_header in secured_http_response_headers:
-            if secure_http_response_header not in http_response_headers:
-                self.unset_secured_http_response_headers.append(secure_http_response_header)
-
-        juicy_headers = ["Server", "X-Powered-By"]
         self.juicy_headers = dict()
-        for http_response_header in http_response_headers:
-            if http_response_header in juicy_headers:
-                self.juicy_headers[http_response_header] = http_response_headers[http_response_header]
+        response = requests.get(self.url, headers=self.headers, allow_redirects=False)
+        if response.status_code == 200:
+            http_response_headers = response.headers
+            for secure_http_response_header in secured_http_response_headers:
+                if secure_http_response_header not in http_response_headers:
+                    self.unset_secured_http_response_headers.append(secure_http_response_header)
+
+            juicy_headers = ["Server", "X-Powered-By"]
+            for http_response_header in http_response_headers:
+                if http_response_header in juicy_headers:
+                    self.juicy_headers[http_response_header] = http_response_headers[http_response_header]
 
     def get_phpinfo(self):
         # Checking phpinfo file
@@ -217,7 +213,7 @@ class WebInspect:
             self.cgidir = "N/A"
     
     def get_allowed_methods(self):
-        allowed_methods = requests.options(self.url, headers=self.headers)
+        allowed_methods = requests.options(self.url, headers=self.headers, allow_redirects=False)
         if allowed_methods.status_code == 200:
             try:
                 if allowed_methods.headers["Allow"]:
