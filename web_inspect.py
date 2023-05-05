@@ -12,10 +12,10 @@ class WebInspect:
     def __init__(self, url):
         if url.startswith('http'):
             self.url = url[:-1] if url.endswith('/')  else url
-            self.headers = {'User-agent': self.get_user_agent(), 'Referer': '/'.join(self.url.split('/')[:3])}
+            self.headers = {'User-agent': 'Mozilla/5.O', 'Referer': '/'.join(self.url.split('/')[:3])}
             try:
                 command = ['curl','-A', self.get_user_agent(), '-s', self.url]
-                self.response = subprocess.check_output(command)
+                self.response = subprocess.check_output(command, universal_newlines=True)
                 self.soup = bsoup(self.response, 'html.parser')
             except subprocess.CalledProcessError:
                 printc("[red1 b][-][/red1 b] An error occured! Are you connected to the Internet?")
