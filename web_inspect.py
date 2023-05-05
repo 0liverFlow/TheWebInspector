@@ -198,9 +198,10 @@ class WebInspect:
         phpinfo_url = self.url + '/phpinfo.php'
         phpinfo_response = requests.get(phpinfo_url, headers=self.headers, allow_redirects=False)
         if phpinfo_response.status_code == 200:
+            print(f"phpinfo url is {phpinfo_url}")
             self.phpinfo = phpinfo_response.url
         else:
-            self.phpinfo = "N/A"
+            self.phpinfo = "N/A (phpinfo_response.status_code)"
            
     def get_cgidir(self):
         default_cgidirs = ['/admin/cgi-bin', '/cgi-bin/admin', '/cgi-bin']
@@ -211,7 +212,7 @@ class WebInspect:
                 self.cgidir = cgidir_response.url
                 break
         else:
-            self.cgidir = "N/A"
+            self.cgidir = "N/A (cgidir_response.status_code)"
     
     def get_allowed_methods(self):
         allowed_methods = requests.options(self.url, headers=self.headers, allow_redirects=False)
