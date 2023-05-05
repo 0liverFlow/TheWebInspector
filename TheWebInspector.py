@@ -49,6 +49,14 @@ if __name__ == "__main__":
     # Target URL
     ##############
     printc(f"\n[bright_blue][*][/bright_blue] Target URL: [red3]{inspected_webpage.url}[/red3]\n{'-'*45}")
+    
+    ###########################
+    # Check the webpage content
+    ###########################
+    if inspected_webpage.soup == "":
+        printc("[red3][-][/red3] No information found!")
+        sys.exit(printc("[gold1][!][/gold1] Please make sure that the specified url is not redirected, then retry!")
+                 
     ##############################
     # Checking website language
     ##############################
