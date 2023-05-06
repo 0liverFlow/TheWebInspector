@@ -24,7 +24,7 @@ class WebInspect:
                     command = ['curl','-A', 'Mozilla/5.0', '-s', self.origin_url]
                     self.base_url =  '/'.join(self.origin_url.split('/')[:3])
                     self.headers = {'User-agent': self.get_user_agent(), 'Referer': self.base_url}
-                self.response = subprocess.check_output(command)
+                self.response = subprocess.check_output(command, universal_newlines=True)
                 self.soup = bsoup(self.response, 'html.parser')
             except subprocess.CalledProcessError:
                 printc("[red3][-][/red3] An error occured! Are you connected to the Internet?")
