@@ -230,7 +230,7 @@ if __name__ == "__main__":
     inspected_webpage.get_sitemap_xml()
     printc(f"\n[bright_blue][*][/bright_blue] Sitemap.xml\n{'-'*20}")
     if inspected_webpage.sitemap_xml not in ["N/A", "Sitemap file empty!"]:
-        printc(f"[spring_green2][+][/spring_green2] {inspected_webpage.url + '/sitemap.xml'} found!")
+        printc(f"[spring_green2][+][/spring_green2] {inspected_webpage.base_url + '/sitemap.xml'} found!")
         if args.verbose > 0:
             for line in inspected_webpage.sitemap_xml:
                 printc(f"{line.strip()}")
