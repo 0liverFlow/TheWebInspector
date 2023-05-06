@@ -34,7 +34,7 @@ class WebInspect:
                 printc(f"[gold1][3][/gold1] Make sure that the protocol (http[s]) specified is correct!")
                 printc(f"\n[red3][-][/red3] If the error is still occuring, thanks to report it at https://github.com/0liverFlow/TheWebInspector/issues!")           
                 printc(f"[red3][-][/red3] For that, thanks to report the issue using the error description below ↓ ")
-                sys.exit(printc(f"{e}}))
+                sys.exit(printc(f"{e}"))
         else:
             sys.exit(printc("[red1 b][-][/red1 b] Incorrect URL format (ex: http[s]://example.com"))
 
