@@ -28,12 +28,13 @@ class WebInspect:
                 self.soup = bsoup(self.response, 'html.parser')
             except (subprocess.CalledProcessError, requests.exceptions.ConnectionError) as e:
                 printc("[red3][-][/red3] An error occured!")
-                printc(f"[gold1][!][/gold1] Thanks to follow the recommendations below!")
+                printc(f"[gold1][!][/gold1] Here are some recommendations to fix the issue!")
                 printc(f"[gold1][1][/gold1] Make sure you are connected to the Internet!")
-                printc(f"[gold1][2][/gold1] Make sure that the specified url exists!")
+                printc(f"[gold1][2][/gold1] Make sure that {url} is correct!")
                 printc(f"[gold1][3][/gold1] Make sure that the protocol (http[s]) specified is correct!")
-                printc(f"[red3][-][/red3] If the error is still occuring, thanks to report it at https://github.com/0liverFlow/TheWebInspector/issues!")           
-                sys.exit(printc(f"[red3][-][/red3] For that, thanks to report the issue with the following error description: {e}"))
+                printc(f"\n[red3][-][/red3] If the error is still occuring, thanks to report it at https://github.com/0liverFlow/TheWebInspector/issues!")           
+                printc(f"[red3][-][/red3] For that, thanks to report the issue using the error description below ↓ ")
+                sys.exit(printc(f"{e}}))
         else:
             sys.exit(printc("[red1 b][-][/red1 b] Incorrect URL format (ex: http[s]://example.com"))
 
