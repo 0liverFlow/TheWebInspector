@@ -61,7 +61,7 @@ if __name__ == "__main__":
     ############################
     if inspected_webpage.response == "":
         printc("[red3][-][/red3] No information found!")
-        if not args.follow_redirects:
+        if not args.followredirects:
             sys.exit(printc("[gold1][!][/gold1] Please run the command again using the '--followredirects' option!!"))
         else:
             sys.exit(printc("[red3][!][/red3] Unknown error, thanks to report this issue at https://github.com/0liverFlow/TheWebInspector/issues"))
