@@ -12,6 +12,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='main.py', description="Retrieve interesting information from the webpage's source code", epilog='Ping me: 0liverFlow@proton.me')
     parser.add_argument('-v', '--verbose', action="count", help='increase output verbosity', default=0)
     parser.add_argument('-u','--url', metavar="URL", help="target's url (e.g. https://example.com)", required=True)
+    parser.add_argument('--followredirects', help="Follow URL redirections", action="store_true")
     args = parser.parse_args()
     url = args.url
 
@@ -43,20 +44,28 @@ if __name__ == "__main__":
             printc("[gold1][!][/gold1] Supported OS are: GNU/Linux, Windows and MacOS")
             sys.exit(printc("[gold1][!][/gold1] If you're sure that you are running one of these systems, thanks to report this issue at https://github.com/0liverFlow/TheWebInspector/issues"))
     
-    inspected_webpage = WebInspect(url) # new instance of WebInspect class  
+    inspected_webpage = WebInspect(url, args.followredirects) # new instance of WebInspect class  
 
     ###############
     # Target URL
     ##############
-    printc(f"\n[bright_blue][*][/bright_blue] Target URL: [red3]{inspected_webpage.url}[/red3]\n{'-'*45}")
+    printc(f"\n[bright_blue][*][/bright_blue] Target URL: [red3]{inspected_webpage.origin_url}[/red3]\n{'-'*45}")
+    if inspected_webpage.redirected_url and inspected_webpage.redirected_url != inspected_webpage.origin_url:
+        printc(f"[gold1][!][/gold1] {inspected_webpage.origin_url} redirected to: {inspected_webpage.redirected_ur}")
+        target_url = inspected_webpage.redirected_url
+    else:
+        target_url = inspected_webpage.origin_url
     
     ############################
     # Check the webpage response
     ############################
     if inspected_webpage.response == "":
         printc("[red3][-][/red3] No information found!")
-        sys.exit(printc("[gold1][!][/gold1] Please make sure that the specified url is not redirected, then retry!"))
-                 
+        if not args.follow_redirects:
+            sys.exit(printc("[gold1][!][/gold1] Please run the command again using the '--followredirects' option!!"))
+        else:
+            sys.exit(printc("[red3][!][/red3] Unknown error, thanks to report this issue at https://github.com/0liverFlow/TheWebInspector/issues"))
+        
     ##############################
     # Checking website language
     ##############################
@@ -80,7 +89,7 @@ if __name__ == "__main__":
     #######################
     # Allowed HTTP Methods
     #######################
-    inspected_webpage.get_allowed_methods()
+    inspected_webpage.get_allowed_methods(target_url)
     printc(f"\n[bright_blue][*][/bright_blue] Allowed Methods\n{'-'*19}")
     if inspected_webpage.allowed_methods != "N/A":
         printc(f"[spring_green2][+][/spring_green2] {inspected_webpage.allowed_methods}")
@@ -90,7 +99,7 @@ if __name__ == "__main__":
     ########################            
     # HTTP Response Headers
     ########################
-    inspected_webpage.check_secured_http_response_headers()
+    inspected_webpage.check_secured_http_response_headers(target_url)
     printc(f"\n[bright_blue][*][/bright_blue] HTTP Response Headers\n{'-'*25}")
     if len(inspected_webpage.unset_secured_http_response_headers):
         for unset_secured_http_response_header in inspected_webpage.unset_secured_http_response_headers:
@@ -224,7 +233,7 @@ if __name__ == "__main__":
         printc(f"[spring_green2][+][/spring_green2] {inspected_webpage.url + '/sitemap.xml'} found!")
         if args.verbose > 0:
             for line in inspected_webpage.sitemap_xml:
-                printc(f"{str(line).strip()}")
+                printc(f"{line.strip()}")
     else:
         printc(f"[red3][-][/red3] {inspected_webpage.sitemap_xml}")
 
@@ -233,7 +242,7 @@ if __name__ == "__main__":
     ##################
     inspected_webpage.get_phpinfo()
     printc(f"\n[bright_blue][*][/bright_blue] PHP Info\n{'-'*20}")
-    if not inspected_webpage.phpinfo != "N/A":
+    if inspected_webpage.phpinfo != "N/A":
         printc(f"[spring_green2][+][/spring_green2] {inspected_webpage.phpinfo} found!")
     else:
         printc(f"[red3][-][/red3] {inspected_webpage.phpinfo}")
