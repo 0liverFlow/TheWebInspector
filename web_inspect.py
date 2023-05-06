@@ -17,12 +17,12 @@ class WebInspect:
                     redirected_url = requests.get(url, headers={'User-agent': self.get_user_agent(), 'Referer': '/'.join(url.split('/')[:3])}, allow_redirects=True).url
                     self.redirected_url = redirected_url[:-1] if redirected_url.endswith('/')  else redirected_url
                     if self.redirected_url and self.redirected_url != self.origin_url:
-                        command = ['curl','-A', 'Mozilla/5.0', '-s', self.redirected_url]
                         self.base_url = '/'.join(self.redirected_url.split('/')[:3])
+                        command = ['curl','-A', 'Mozilla/5.0', '-e', self.base_url, '-s', self.redirected_url]
                         self.headers = {'User-agent': self.get_user_agent(), 'Referer': self.base_url}
                 else:
-                    command = ['curl','-A', 'Mozilla/5.0', '-s', self.origin_url]
                     self.base_url =  '/'.join(self.origin_url.split('/')[:3])
+                    command = ['curl','-A', 'Mozilla/5.0', '-e', self.base_url, '-s', self.origin_url]
                     self.headers = {'User-agent': self.get_user_agent(), 'Referer': self.base_url}
                 self.response = subprocess.check_output(command, universal_newlines=True)
                 self.soup = bsoup(self.response, 'html.parser')
