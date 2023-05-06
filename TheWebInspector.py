@@ -51,7 +51,7 @@ if __name__ == "__main__":
     ##############
     printc(f"\n[bright_blue][*][/bright_blue] Target URL: [red3]{inspected_webpage.origin_url}[/red3]\n{'-'*45}")
     if inspected_webpage.redirected_url and inspected_webpage.redirected_url != inspected_webpage.origin_url:
-        printc(f"[gold1][!][/gold1] {inspected_webpage.origin_url} redirected to: {inspected_webpage.redirected_ur}")
+        printc(f"[gold1][!][/gold1] {inspected_webpage.origin_url} redirected to: {inspected_webpage.redirected_url}")
         target_url = inspected_webpage.redirected_url
     else:
         target_url = inspected_webpage.origin_url
