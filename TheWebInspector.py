@@ -65,6 +65,8 @@ if __name__ == "__main__":
             sys.exit(printc("[gold1][!][/gold1] Please run the command again using the '--followredirects' option!!"))
         else:
             sys.exit(printc("[red3][!][/red3] Unknown error, thanks to report this issue at https://github.com/0liverFlow/TheWebInspector/issues"))
+    else:
+        print(f"This the content of the webpage: {inspected_webpage.response}")
         
     ##############################
     # Checking website language
