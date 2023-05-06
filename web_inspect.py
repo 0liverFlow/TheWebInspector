@@ -14,6 +14,7 @@ class WebInspect:
             self.url = url[:-1] if url.endswith('/')  else url
             self.headers = {'User-agent': self.get_user_agent(), 'Referer': '/'.join(self.url.split('/')[:3])}
             try:
+                self.url = requests.get(url).url
                 command = ['curl','-A', 'Mozilla/5.0', '-s', self.url]
                 self.response = subprocess.check_output(command, universal_newlines=True)
                 self.soup = bsoup(self.response, 'html.parser')
