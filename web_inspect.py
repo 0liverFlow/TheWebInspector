@@ -6,21 +6,37 @@ import platform
 from rich import print as printc
 import requests
 from bs4 import BeautifulSoup as bsoup, Comment
-from bs4 import BeautifulSoup as bsoup, Comment
 
 class WebInspect:
-    def __init__(self, url):
+    def __init__(self, url, follow_redirects):
         if url.startswith('http'):
-            self.url = url[:-1] if url.endswith('/')  else url
-            self.headers = {'User-agent': self.get_user_agent(), 'Referer': '/'.join(self.url.split('/')[:3])}
+            self.origin_url = url[:-1] if url.endswith('/')  else url
+            self.redirected_url = ""
             try:
-                self.url = requests.get(url).url
-                command = ['curl','-A', 'Mozilla/5.0', '-s', self.url]
-                self.response = subprocess.check_output(command, universal_newlines=True)
+                if follow_redirects:
+                    redirected_url = requests.get(url, allow_redirects=True).url
+                    self.redirected_url = redirected_url[:-1] if redirected_url.endswith('/')  else redirected_url
+                    if self.redirected_url and self.redirected_url != self.origin_url:
+                        command = ['curl','-A', 'Mozilla/5.0', '-s', self.redirected_url]
+                        self.base_url = '/'.join(self.redirected_url.split('/')[:3])
+                        self.headers = {'User-agent': self.get_user_agent(), 'Referer': self.base_url}
+                else:
+                    command = ['curl','-A', 'Mozilla/5.0', '-s', self.origin_url]
+                    self.base_url =  '/'.join(self.origin_url.split('/')[:3])
+                    self.headers = {'User-agent': self.get_user_agent(), 'Referer': self.base_url}
+                self.response = subprocess.check_output(command)
                 self.soup = bsoup(self.response, 'html.parser')
             except subprocess.CalledProcessError:
-                printc("[red1 b][-][/red1 b] An error occured! Are you connected to the Internet?")
-                sys.exit(printc("[red1 b][-][/red1 b] If yes, thanks to report this issue at https://github.com/0liverFlow/TheWebInspector/issues!"))
+                printc("[red3][-][/red3] An error occured! Are you connected to the Internet?")
+                sys.exit(printc("[red3][-][/red3] If yes, thanks to report this issue at https://github.com/0liverFlow/TheWebInspector/issues!"))
+            except requests.exceptions.ConnectionError as e:
+                printc(f"[red3][-][/red3] An error occured!")
+                printc(f"[gold1][!][/gold1] Thanks to follow the recommendations below!")
+                printc(f"[gold1][1][/gold1] Make sure you are connected to the Internet!")
+                printc(f"[gold1][2][/gold1] Make sure that the specified url exists!")
+                printc(f"[gold1][3][/gold1] Make sure that the protocol (http[s]) specified is correct!")
+                printc(f"[red3][-][/red3] If the error is still occuring, thanks to report it https://github.com/0liverFlow/TheWebInspector/issues!")
+
         else:
             sys.exit(printc("[red1 b][-][/red1 b] Incorrect URL format (ex: http[s]://example.com"))
 
@@ -76,6 +92,7 @@ class WebInspect:
     def get_language(self):
         # Returns the language used by the website
         try:
+            print(f"The value of self.soup is {self.soup}")
             webpage_language = self.soup.find('html')['lang']
             self.language = webpage_language
         except KeyError:
@@ -148,6 +165,43 @@ class WebInspect:
         else:
             self.forms = "N/A"
     
+    def get_allowed_methods(self, target_url):
+        allowed_methods = requests.options(target_url, headers=self.headers, allow_redirects=False)
+        if allowed_methods.status_code == 200:
+            try:
+                if allowed_methods.headers["Allow"]:
+                    self.allowed_methods = allowed_methods.headers["Allow"]
+                else:
+                    self.allowed_methods = "N/A"
+            except KeyError:
+                self.allowed_methods = "N/A"
+        else:
+            self.allowed_methods = "N/A"
+    
+    def check_secured_http_response_headers(self, target_url):
+        secured_http_response_headers = [
+            "Content-Security-Policy",
+            "X-XSS-Protection",
+            "X-Frame-Options",
+            "Strict-Transport-Security",
+            "X-Content-Type-Options",
+            "Referrer-Policy",
+            "Feature-Policy"
+        ]
+        self.unset_secured_http_response_headers = list()
+        self.juicy_headers = dict()
+        response = requests.get(target_url, headers=self.headers, allow_redirects=False)
+        if response.status_code == 200:
+            http_response_headers = response.headers
+            for secure_http_response_header in secured_http_response_headers:
+                if secure_http_response_header not in http_response_headers:
+                    self.unset_secured_http_response_headers.append(secure_http_response_header)
+
+            juicy_headers = ["Server", "X-Powered-By"]
+            for http_response_header in http_response_headers:
+                if http_response_header in juicy_headers:
+                    self.juicy_headers[http_response_header] = http_response_headers[http_response_header]
+    
     def get_robots_txt(self):
         response_robots_txt = requests.get(self.url + '/robots.txt', headers=self.headers, allow_redirects=False)
         if response_robots_txt.status_code == 200:
@@ -160,7 +214,7 @@ class WebInspect:
             self.robots_txt = "N/A"
 
     def get_sitemap_xml(self):
-        response_sitemap_xml = requests.get(self.url + '/sitemap.xml', headers=self.headers, allow_redirects=False)
+        response_sitemap_xml = requests.get(self.base_url + '/sitemap.xml', headers=self.headers, allow_redirects=False)
         if response_sitemap_xml.status_code == 200:
             response_sitemap_xml_content = response_sitemap_xml.text.split()
             if len(response_sitemap_xml_content):
@@ -170,33 +224,9 @@ class WebInspect:
         else:
             self.sitemap_xml = "N/A"
 
-    def check_secured_http_response_headers(self):
-        secured_http_response_headers = [
-            "Content-Security-Policy",
-            "X-XSS-Protection",
-            "X-Frame-Options",
-            "Strict-Transport-Security",
-            "X-Content-Type-Options",
-            "Referrer-Policy",
-            "Feature-Policy"
-        ]
-        self.unset_secured_http_response_headers = list()
-        self.juicy_headers = dict()
-        response = requests.get(self.url, headers=self.headers, allow_redirects=False)
-        if response.status_code == 200:
-            http_response_headers = response.headers
-            for secure_http_response_header in secured_http_response_headers:
-                if secure_http_response_header not in http_response_headers:
-                    self.unset_secured_http_response_headers.append(secure_http_response_header)
-
-            juicy_headers = ["Server", "X-Powered-By"]
-            for http_response_header in http_response_headers:
-                if http_response_header in juicy_headers:
-                    self.juicy_headers[http_response_header] = http_response_headers[http_response_header]
-
     def get_phpinfo(self):
         # Checking phpinfo file
-        phpinfo_url = self.url + '/phpinfo.php'
+        phpinfo_url = self.base_url + '/phpinfo.php'
         phpinfo_response = requests.get(phpinfo_url, headers=self.headers, allow_redirects=False)
         if phpinfo_response.status_code == 200:
             self.phpinfo = phpinfo_response.url
@@ -206,23 +236,10 @@ class WebInspect:
     def get_cgidir(self):
         default_cgidirs = ['/admin/cgi-bin', '/cgi-bin/admin', '/cgi-bin']
         for cgidir in default_cgidirs:
-            cgidir_url = self.url + cgidir
+            cgidir_url = self.base_url + cgidir
             cgidir_response = requests.get(cgidir_url, headers=self.headers, allow_redirects=False)
             if cgidir_response.status_code == 200:
                 self.cgidir = cgidir_response.url
                 break
         else:
             self.cgidir = "N/A"
-    
-    def get_allowed_methods(self):
-        allowed_methods = requests.options(self.url, headers=self.headers, allow_redirects=False)
-        if allowed_methods.status_code == 200:
-            try:
-                if allowed_methods.headers["Allow"]:
-                    self.allowed_methods = allowed_methods.headers["Allow"]
-                else:
-                    self.allowed_methods = "N/A"
-            except KeyError:
-                self.allowed_methods = "N/A"
-        else:
-            self.allowed_methods = "N/A"
