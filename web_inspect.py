@@ -14,7 +14,7 @@ class WebInspect:
             self.redirected_url = ""
             try:
                 if follow_redirects:
-                    redirected_url = requests.get(url, headers={'User-agent': self.get_user_agent()}, allow_redirects=True).url
+                    redirected_url = requests.get(url, headers={'User-agent': self.get_user_agent(), 'Referer': '/'.join(url.split('/')[:3])}, allow_redirects=True).url
                     self.redirected_url = redirected_url[:-1] if redirected_url.endswith('/')  else redirected_url
                     if self.redirected_url and self.redirected_url != self.origin_url:
                         command = ['curl','-A', 'Mozilla/5.0', '-s', self.redirected_url]
