@@ -92,7 +92,6 @@ class WebInspect:
     def get_language(self):
         # Returns the language used by the website
         try:
-            print(f"The value of self.soup is {self.soup}")
             webpage_language = self.soup.find('html')['lang']
             self.language = webpage_language
         except KeyError:
@@ -203,7 +202,7 @@ class WebInspect:
                     self.juicy_headers[http_response_header] = http_response_headers[http_response_header]
     
     def get_robots_txt(self):
-        response_robots_txt = requests.get(self.url + '/robots.txt', headers=self.headers, allow_redirects=False)
+        response_robots_txt = requests.get(self.base_url + '/robots.txt', headers=self.headers, allow_redirects=False)
         if response_robots_txt.status_code == 200:
             response_robots_txt_rules = response_robots_txt.text.split("\n")
             if len(response_robots_txt_rules):
