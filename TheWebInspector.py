@@ -17,32 +17,20 @@ if __name__ == "__main__":
     url = args.url
 
     # Banner
-    print("""
-╔────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╗
-|                                                                                                                                    |
-| ████████╗██╗  ██╗███████╗    ██╗    ██╗███████╗██████╗     ██╗███╗   ██╗███████╗██████╗ ███████╗ ██████╗████████╗ ██████╗ ██████╗  | 
-| ╚══██╔══╝██║  ██║██╔════╝    ██║    ██║██╔════╝██╔══██╗    ██║████╗  ██║██╔════╝██╔══██╗██╔════╝██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗ |
-|    ██║   ███████║█████╗      ██║ █╗ ██║█████╗  ██████╔╝    ██║██╔██╗ ██║███████╗██████╔╝█████╗  ██║        ██║   ██║   ██║██████╔╝ |
-|    ██║   ██╔══██║██╔══╝      ██║███╗██║██╔══╝  ██╔══██╗    ██║██║╚██╗██║╚════██║██╔═══╝ ██╔══╝  ██║        ██║   ██║   ██║██╔══██╗ |
-|    ██║   ██║  ██║███████╗    ╚███╔███╔╝███████╗██████╔╝    ██║██║ ╚████║███████║██║     ███████╗╚██████╗   ██║   ╚██████╔╝██║  ██║ |
-|    ╚═╝   ╚═╝  ╚═╝╚══════╝     ╚══╝╚══╝ ╚══════╝╚═════╝     ╚═╝╚═╝  ╚═══╝╚══════╝╚═╝     ╚══════╝ ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝ |
-|                                                    THE WEB INSPECTOR 1.0                                                           |
-|                                                 Coded with <3 by 0LIVERFLOW                                                        |
-╚────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╝                                  
-""")
-
-    ##############################
-    # Check if curl is installed
-    #############################
-    running_os = WebInspect.get_running_os()
-    if running_os:
-        is_curl_installed = WebInspect.is_installed('curl', running_os)
-        if not is_curl_installed:
-            sys.exit(printc("[red3][-][/red3] You need to install curl to run this script!!"))
-        elif is_curl_installed is None:
-            printc("[red3][-][/red3] Unknown Operating System!!")
-            printc("[gold1][!][/gold1] Supported OS are: GNU/Linux, Windows and MacOS")
-            sys.exit(printc("[gold1][!][/gold1] If you're sure that you are running one of these systems, thanks to report this issue at https://github.com/0liverFlow/TheWebInspector/issues"))
+    printc("""[#008080]
+╔────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╗                          
+|                                                                                                                                |
+|                                                                                                                                |                      
+|                  _____ _   _ _____  __        _______ ____    ___ _   _ ____  ____  _____ ____ _____ ___  ____                 |
+|                 |_   _| | | | ____| \ \      / | ____| __ )  |_ _| \ | / ___||  _ \| ____/ ___|_   _/ _ \|  _ \                |
+|                   | | | |_| |  _|    \ \ /\ / /|  _| |  _ \   | ||  \| \___ \| |_) |  _|| |     | || | | | |_) |               |
+|                   | | |  _  | |___    \ V  V / | |___| |_) |  | || |\  |___) |  __/| |__| |___  | || |_| |  _ <                |
+|                   |_| |_| |_|_____|    \_/\_/  |_____|____/  |___|_| \_|____/|_|   |_____\____| |_| \___/|_| \_\               |
+|                                                  THE WEB INSPECTOR 1.0                                                         |   
+|                                               Coded with <3 by 0LIVERFLOW                                                      |
+|                                                                                                                                |
+╚────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╝                                
+[/#008080]""")
     
     inspected_webpage = WebInspect(url, args.followredirects) # new instance of WebInspect class  
 
@@ -59,7 +47,7 @@ if __name__ == "__main__":
     ############################
     # Check the webpage response
     ############################
-    if inspected_webpage.response == "":
+    if inspected_webpage.response.text == "":
         printc("[red3][-][/red3] No information found!")
         if not args.followredirects:
             sys.exit(printc("[gold1][!][/gold1] Please run the command again using the '--followredirects' option!!"))
@@ -212,6 +200,7 @@ if __name__ == "__main__":
     inspected_webpage.get_robots_txt()
     printc(f"\n[bright_blue][*][/bright_blue] Robots.txt\n{'-'*20}")
     if inspected_webpage.robots_txt not in ["N/A", "Robots.txt file empty!"]:
+        printc(f"[spring_green2][+][/spring_green2] {inspected_webpage.base_url + '/robots.txt'} found!")
         for robots_txt_rule in inspected_webpage.robots_txt:
             if args.verbose == 2:
                     printc(f"{robots_txt_rule.strip()}")
@@ -243,9 +232,19 @@ if __name__ == "__main__":
     inspected_webpage.get_phpinfo()
     printc(f"\n[bright_blue][*][/bright_blue] PHP Info\n{'-'*20}")
     if inspected_webpage.phpinfo != "N/A":
-        printc(f"[spring_green2][+][/spring_green2] {inspected_webpage.phpinfo} found!")
+        printc(f"[spring_green2][+][/spring_green2] {inspected_webpage.phpinfo} found! (Status code: {inspected_webpage.phpinfo_status_code})")
     else:
         printc(f"[red3][-][/red3] {inspected_webpage.phpinfo}")
+
+    ##################
+    # Wordpress
+    ##################
+    inspected_webpage.get_wordpress()
+    printc(f"\n[bright_blue][*][/bright_blue] WordPress\n{'-'*20}")
+    if inspected_webpage.wordpress != "N/A":
+        printc(f"[spring_green2][+][/spring_green2] {inspected_webpage.wordpress} found! (Status code: {inspected_webpage.wordpress_status_code})")
+    else:
+        printc(f"[red3][-][/red3] {inspected_webpage.wordpress}")
 
     ##################
     # Cgidir
@@ -253,7 +252,7 @@ if __name__ == "__main__":
     inspected_webpage.get_cgidir()
     printc(f"\n[bright_blue][*][/bright_blue] CGI Dir\n{'-'*20}")
     if inspected_webpage.cgidir != "N/A":
-        printc(f"[spring_green2][+][/spring_green2] {inspected_webpage.cgidir} found!")
+        printc(f"[spring_green2][+][/spring_green2] {inspected_webpage.cgidir} found! (Status code: {inspected_webpage.cgidir_status_code})")
     else:
         printc(f"[red3][-][/red3] {inspected_webpage.cgidir}")
 
