@@ -1,7 +1,5 @@
 import sys
 import random
-import subprocess
-import platform
 
 from rich import print as printc
 import requests
@@ -12,52 +10,41 @@ class WebInspect:
         if url.startswith('http'):
             self.origin_url = url[:-1] if url.endswith('/')  else url
             self.redirected_url = ""
+            self.base_url = '/'.join(self.origin_url.split('/')[:3])
+            self.headers = {
+                'Accept': 'text/html',
+                'User-Agent': self.get_user_agent(),
+                'Referer': self.base_url
+            }    
             try:
-                if follow_redirects:
-                    redirected_url = requests.get(url, headers={'User-agent': self.get_user_agent(), 'Referer': '/'.join(url.split('/')[:3])}, allow_redirects=True).url
-                    self.redirected_url = redirected_url[:-1] if redirected_url.endswith('/')  else redirected_url
-                    if self.redirected_url and self.redirected_url != self.origin_url:
+                with requests.Session() as session:
+                    if follow_redirects:
+                        self.response = session.get(url, headers=self.headers, allow_redirects=True)
+                        redirected_url = self.response.url
+                        self.redirected_url = redirected_url[:-1] if redirected_url.endswith('/')  else redirected_url
                         self.base_url = '/'.join(self.redirected_url.split('/')[:3])
-                        command = ['curl','-A', 'Mozilla/5.0', '-e', self.base_url, '-s', self.redirected_url]
-                        self.headers = {'User-agent': self.get_user_agent(), 'Referer': self.base_url}
-                else:
-                    self.base_url =  '/'.join(self.origin_url.split('/')[:3])
-                    command = ['curl','-A', 'Mozilla/5.0', '-e', self.base_url, '-s', self.origin_url]
-                    self.headers = {'User-agent': self.get_user_agent(), 'Referer': self.base_url}
-                self.response = subprocess.check_output(command, universal_newlines=True)
-                self.soup = bsoup(self.response, 'html.parser')
-            except (subprocess.CalledProcessError, requests.exceptions.ConnectionError) as e:
-                printc("[red3][-][/red3] An error occured!")
-                printc(f"[gold1][!][/gold1] Here are some recommendations to fix the issue!")
+                    else:
+                        self.response = session.get(url, headers=self.headers, allow_redirects=False)
+                    # Mimic an authentic request to avoid being blocked by websites
+                    if 'Set-Cookie' in self.response.headers:
+                        self.headers['Cookie'] = self.response.headers['Set-Cookie']
+                    if 'Cache-Control' in self.response.headers:
+                        self.headers['Cache-Control'] = self.response.headers['Cache-Control']
+                    if 'Last-Modified' in self.response.headers:
+                        self.headers['If-Modified-Since'] = self.response.headers['Last-Modified']
+                    if 'Location' in self.response.headers:
+                        self.headers['Location'] = self.response.headers['Location']
+                    self.soup = bsoup(self.response.text, 'html.parser')
+            except requests.exceptions.ConnectionError as e:
+                printc(f"[red3][-][/red3] An error occured!")
+                printc(f"[gold1][!][/gold1] Thanks to follow the recommendations below!")
                 printc(f"[gold1][1][/gold1] Make sure you are connected to the Internet!")
-                printc(f"[gold1][2][/gold1] Make sure that {url} is correct!")
+                printc(f"[gold1][2][/gold1] Make sure that the specified url exists!")
                 printc(f"[gold1][3][/gold1] Make sure that the protocol (http[s]) specified is correct!")
-                printc(f"\n[red3][-][/red3] If the error is still occuring, thanks to report it at https://github.com/0liverFlow/TheWebInspector/issues!")           
-                printc(f"[red3][-][/red3] For that, thanks to report the issue using the error description below ↓ ")
-                sys.exit(printc(f"{e}"))
+                sys.exit(printc(f"[red3][-][/red3] If the error is still occuring, thanks to report it https://github.com/0liverFlow/TheWebInspector/issues!"))
         else:
             sys.exit(printc("[red1 b][-][/red1 b] Incorrect URL format (ex: http[s]://example.com"))
 
-    @staticmethod
-    def get_running_os():
-        return platform.platform().split('-')[0]
-
-    @staticmethod   
-    def is_installed(program, running_os):
-        if "linux" in running_os.lower() or "macos" in running_os.lower():
-            try:
-                subprocess.check_output(["which", program])
-                return True
-            except subprocess.CalledProcessError:
-                return False
-        elif "windows" in running_os.lower():
-            try:
-                subprocess.check_output(["where", program])
-                return True
-            except subprocess.CalledProcessError:
-                return False
-        else:
-           return None
 
     @staticmethod
     def get_user_agent() -> str:
@@ -226,9 +213,25 @@ class WebInspect:
         phpinfo_url = self.base_url + '/phpinfo.php'
         phpinfo_response = requests.get(phpinfo_url, headers=self.headers, allow_redirects=False)
         if phpinfo_response.status_code == 200:
-            self.phpinfo = phpinfo_response.url
+            self.phpinfo, self.phpinfo_status_code = phpinfo_response.url, phpinfo_response.status_code
+        elif phpinfo_response.status_code == 403:
+            self.phpinfo, self.phpinfo_status_code = phpinfo_response.url, phpinfo_response.status_code
         else:
             self.phpinfo = "N/A"
+
+    def get_wordpress(self):
+        wordpress_default_dirs = ['/wp-login.php','/wp-admin', '/wp-config.php', '/wp-includes','/wp-content']
+        for wordpress_dir in wordpress_default_dirs:
+            wordpress_url = self.base_url + wordpress_dir
+            wordpress_response = requests.get(wordpress_url, headers=self.headers, allow_redirects=False)
+            if wordpress_response.status_code == 200:
+                self.wordpress, self.wordpress_status_code = wordpress_response.url, wordpress_response.status_code
+                break
+            elif wordpress_response.status_code == 403:
+                self.wordpress, self.wordpress_status_code = wordpress_response.url, wordpress_response.status_code
+                break
+        else:
+            self.wordpress = "N/A"
            
     def get_cgidir(self):
         default_cgidirs = ['/admin/cgi-bin', '/cgi-bin/admin', '/cgi-bin']
@@ -236,7 +239,10 @@ class WebInspect:
             cgidir_url = self.base_url + cgidir
             cgidir_response = requests.get(cgidir_url, headers=self.headers, allow_redirects=False)
             if cgidir_response.status_code == 200:
-                self.cgidir = cgidir_response.url
+                self.cgidir, self.cgidir_status_code = cgidir_response.url, cgidir_response.status_code
+                break
+            elif cgidir_response.status_code == 403:
+                self.cgidir, self.cgidir_status_code = cgidir_response.url, cgidir_response.status_code
                 break
         else:
             self.cgidir = "N/A"
