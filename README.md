@@ -41,7 +41,7 @@ python3.x TheWebInspector.py -u url [--followredirects] [-v]
 ## Important Notes
 1. You don't need administrator privileges to run this script.
 2. By default, this script doesn't follow redirections. If you want to follow redirections, you need to specify the **--followredirects** option.
-3. For more information, you can use the **-v** or **-vv** option.
+3. To get more information, you can use the **-v** or **-vv** option which will display more information such as the forms, the sitemap.xml content.
 
 ## Contribution
 1. If you noticed any bugs, report me  <a href="https://github.com/0liverFlow/TheWebInspector/issues">here</a> 
