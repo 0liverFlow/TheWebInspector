@@ -38,7 +38,7 @@ Then you can run it
 ```
 python3.x TheWebInspector.py -u url [--followredirects] [-v]
 ```
-## Important Note
+## Important Notes
 1. You don't need administrator privileges to run this script.
 2. By default, this script doesn't follow redirections. If you want to follow redirections, you need to specify the **--followredirects** option.
 3. For more information, you can use the **-v** or **-vv** option.
