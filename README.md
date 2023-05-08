@@ -44,5 +44,5 @@ python3.x TheWebInspector.py -u url [--followredirects] [-v]
 3. To get more information, you can use the **-v** or **-vv** option which will display more information such as the forms, the sitemap.xml file content.
 
 ## Contribution
-1. If you noticed any bugs, report me  <a href="https://github.com/0liverFlow/TheWebInspector/issues">here</a> 
+1. If you noticed any bugs, thanks to report <a href="https://github.com/0liverFlow/TheWebInspector/issues">here</a> 
 2. For any interesting idea, thanks to ping me at <a href="mailto:0liverFlow@proton.me">0liverFlow</a>
