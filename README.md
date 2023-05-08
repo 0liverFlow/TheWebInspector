@@ -45,4 +45,4 @@ python3.x TheWebInspector.py -u url [--followredirects] [-v]
 
 ## Contribution
 1. If you noticed any bugs, report me  <a href="https://github.com/0liverFlow/TheWebInspector/issues">here</a> 
-2. For any interesting idea, thanks to ping me at 0liverFlow@proton.me
+2. For any interesting idea, thanks to ping me at <a href="mailto:0liverFlow@proton.me">0liverFlow</a>
